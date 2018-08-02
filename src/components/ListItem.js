@@ -1,18 +1,30 @@
 import React, { Component } from 'react';
-import { Text, TouchableWithoutFeedback, View } from 'react-native';
+import { Text, TouchableWithoutFeedback, View, LayoutAnimation, Platform, UIManager } from 'react-native';
 import { connect } from 'react-redux';
 import { CardSection } from './common';
 import * as actions from '../actions';
-
-class ListItem extends Component{
-  renderDescription() {
-  const { library, selectedLibraryId } = this.props;
-
-    if (library.item.id === selectedLibraryId){
-      return (
-        <Text>{library.item.description}</Text>
-      );
+const { UIManager } = NativeModules;
+UIManager.setLayoutAnimationEnabledExperimental(true);
+componentWillMount() {
+    if (Platform.OS === 'android'){
+        UIManager.setLayoutAnimationEnabledExperimental(true);
     }
+}
+class ListItem extends Component{
+  componentDidUpdate(){
+    LayoutAnimation.spring();
+  }
+  renderDescription() {
+    const { library, expanded } = this.props;
+      if (expanded){
+        return (
+          <CardSection>
+            <Text style={{ flex: 1}}>
+              Description :{library.item.description}
+            </Text>
+          </CardSection>
+        );
+     }
   }
 
   render(){
@@ -35,7 +47,6 @@ class ListItem extends Component{
        </View>
       </TouchableWithoutFeedback>
     );
-  }
 }
 
 
@@ -46,8 +57,9 @@ const styles = {
   }
 };
 
-const mapStateToProps = state => {
-  return { selectLibraryId: state.selectedLibraryId };
+const mapStateToProps = (state, ownProps) => {
+  const expanded = state.selectedLibraryId === ownProps.library.item.id;
+  return { expanded };
 };
 
 export default connect(mapStateToProps, actions)(ListItem);
